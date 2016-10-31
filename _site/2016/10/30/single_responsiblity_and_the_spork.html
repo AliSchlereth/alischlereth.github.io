@@ -32,6 +32,7 @@
 <div class="container-fluid">
   <img id="spork" src="http://cdn2.backcountrygear.com/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/s/n/snow_peak_titanium_spork_ti.jpg
   " alt="spork">
+  <h4>The Spork</h4>
   <p>
     Most people have had at one point or another in their lives, the unfortunate experience of eating with a spork.
     Aside from my friend <a href="https://www.linkedin.com/in/lee-saville">Lee</a>, everyone I know hates sporks.
@@ -53,6 +54,7 @@
       <li>You may pass only one instance variable to a view.</li>
     </ol>
   </div>
+  <h4>A method may contain no more than 5 lines of code.</h4>
   <p>
     Here we are going to focus on number 2)<emphasis>A method may contain no more than 5 lines of code.</emphasis>
     It is easy enough to get in the flow of creating functionality, only to find once you have reached your goal,
@@ -92,7 +94,7 @@
       current_node<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> node_to_insert
       node
     <span style="color: #008800; font-weight: bold">end</span>
-  </pre></td></tr></table></div>
+  </pre></td></tr></table></div></br>
 
   <p>
     Unfortunately, in order to figure out what this method does, you have to take some time to carefully trace through
@@ -100,11 +102,16 @@
     Developer will be spent reading not only your own code, but also that of your team, let us be kind to each other and
     write highly readable, clean, code.
   </p>
+  <h4>Extraction: the act or process of getting something by pulling it out</h4>
   <p>
     One of the easiest ways to achieve this goal of writing clean code, with only 5 lines per method is to extract your
     code from one method into another. Taking my example from earlier. First, we need to look through to find where we can
     simply cut some functionality from one method into another. A place I find easy to start, is pulling out loops and if/else
-    conditionals. Let's pull out the conditional on lines 7 - 13.
+    conditionals.
+  </p>
+  <h4>Extract If/elsif/else Conditionals</h4>
+  <p>
+     Let's pull out the conditional on lines 7 - 13.
   </p>
   <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
    2
@@ -147,7 +154,7 @@
       <span style="color: #008800; font-weight: bold">end</span>
     <span style="color: #008800; font-weight: bold">end</span>
   <span style="color: #008800; font-weight: bold">end</span>
-  </pre></td></tr></table></div>
+  </pre></td></tr></table></div></br>
 
   <p>
     When pulling out code, extracting, keep in mind that this bit of code does not live in isolation. What will it need to
@@ -159,7 +166,11 @@
     task performed is what gets automatically returned out of a method. Our new find_position method will either call
     the prepend method in line 15, or slide along the nodes until it reaches the intended position in the linked_list
     in lines 17-19. I want to take the opportunity now, to look more closely at find_position.
-    It is not a 5 line method, what can we do about that? Earlier I mentioned if/else and loops are great places to start
+    It is not a 5 line method, what can we do about that?
+  </p>
+  <h4>Extract Loops</h4>
+  <p>
+    Earlier I mentioned if/else and loops are great places to start
     when extracting code. Let's examine the loop on 17-19.
   </p>
   <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%">1
@@ -179,7 +190,7 @@
       <span style="color: #008800; font-weight: bold">end</span>
     <span style="color: #008800; font-weight: bold">end</span>
   <span style="color: #008800; font-weight: bold">end</span>
-  </pre></td></tr></table></div>
+  </pre></td></tr></table></div></br>
   <p>
     By pulling out the loop, we now have find_position which calls to slide_along_nodes to do the sliding.
   </p>
@@ -208,11 +219,12 @@
       current_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
       <span style="color: #008800; font-weight: bold">end</span>
   <span style="color: #008800; font-weight: bold">end</span>
-  </pre></td></tr></table></div>
+  </pre></td></tr></table></div></br>
   <p>
     That feels really good, our insert method is down from 16 lines to 9, and it is already much easier to
     quickly read what is happening. Unfortunately, we have already used our low hanging fruit.
   </p>
+  <h4>Slim down simple If Conditionals</h4>
   <p>
     In addition to extracting if/else conitionals and loops, we can also refactor that simple if statement
     on line 2 down from 3 lines to 1.
@@ -222,12 +234,12 @@
   3</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
      <span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span>
   <span style="color: #008800; font-weight: bold">end</span>
-  </pre></td></tr></table></div>
+  </pre></td></tr></table></div></br>
   <p>
   to:
   </p>
   <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%">1</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span> <span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
-  </pre></td></tr></table></div>
+  </pre></td></tr></table></div></br>
   <p>
     As of right now, our insert method and its dependent methods put together looks like this:
   </p>
@@ -276,12 +288,16 @@
       current_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
      <span style="color: #008800; font-weight: bold">end</span>
   <span style="color: #008800; font-weight: bold">end</span>
-  </pre></td></tr></table></div>
+  </pre></td></tr></table></div></br>
   <p>
     Now here I'm stuck. I really don't want to extract out further parts of this insert method.
     I took out, extracted, the if/else conditionals, I extracted the loop, and slimmed down that
-    if conditional to one line. I think I can probably do something with lines 6-7 since it simply
-    returns node. When naming a new method here, I want to think about what these lines are doing,
+    if conditional to one line.
+  </p>
+  <h4>What lines could function independently?</h4>
+  <p>
+    I think I can probably do something with lines 6-7.
+    When naming a new method here, I want to think about what these lines are doing,
     and give it a name that illustrates that. Here we are inserting the new node, but before that
     must attach the old next_node to this current_node so we don't lose track of it.
     (If that doesn't make sense, you may want to
@@ -293,7 +309,7 @@
       I'm going to take line 4 out from insert and move it into attach_new_node since lines 6 & 7 were
       the ones using it anyway. How about this:
     </p>
-  <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
+    <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
    2
    3
    4
@@ -309,22 +325,23 @@
     <span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span> <span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
     current_node <span style="color: #333333">=</span> head
     current_node <span style="color: #333333">=</span> find_position(position, current_node)
-    attach_new_node(node_to_insert, current_node, node)
+    attach_new_node(current_node, node)
     node
   <span style="color: #008800; font-weight: bold">end</span>
 
-  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">attach_new_node</span>(node_to_insert, current_node, node)
-    node_to_insert <span style="color: #333333">=</span> <span style="color: #003366; font-weight: bold">Node</span><span style="color: #333333">.</span>new(node)
+  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">attach_new_node</span>(current_node, node)
+    node_to_insert           <span style="color: #333333">=</span> <span style="color: #003366; font-weight: bold">Node</span><span style="color: #333333">.</span>new(node)
     node_to_insert<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
-    current_node<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> node_to_insert
+    current_node<span style="color: #333333">.</span>next_node   <span style="color: #333333">=</span> node_to_insert
   <span style="color: #008800; font-weight: bold">end</span>
-  </pre></td></tr></table></div>
+  </pre></td></tr></table></div></br>
+
 
   <p>
     The new method attach_new_node will do the work of making sure our links don't get lost in the process of inserting
     a new node into the list. Putting it all back together, it looks like this:
   </p>
-  <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
+    <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
    2
    3
    4
@@ -355,11 +372,11 @@
     <span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span> <span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
     current_node <span style="color: #333333">=</span> head
     current_node <span style="color: #333333">=</span> find_position(position, current_node)
-    attach_new_node(node_to_insert, current_node, node)
+    attach_new_node(current_node, node)
     node
   <span style="color: #008800; font-weight: bold">end</span>
 
-  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">attach_new_node</span>(node_to_insert, current_node, node)
+  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">attach_new_node</span>(current_node, node)
     node_to_insert           <span style="color: #333333">=</span> <span style="color: #003366; font-weight: bold">Node</span><span style="color: #333333">.</span>new(node)
     node_to_insert<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
     current_node<span style="color: #333333">.</span>next_node   <span style="color: #333333">=</span> node_to_insert
@@ -379,15 +396,16 @@
     <span style="color: #008800; font-weight: bold">end</span>
     current_node
   <span style="color: #008800; font-weight: bold">end</span>
-  </pre></td></tr></table></div>
+  </pre></td></tr></table></div></br>
 
+  <h4>Line it up!</h4>
   <p>
     I can't leave without pointing out one of my favorite ways to make code more readable -
     lining everything up, not just indention but the equals signs. Check out lines 3 & 4, and 10-12.
     Doesn't it just set your Software Developer heart at ease?
   </p>
   <p>
-    Remember, when extracting from a method first look for:
+    <h5>Remember, when extracting from a method first look for:</h5>
     <ol>
       <li>Conditionals (if/elsif/else)</li>
       <li>Loops</li>
