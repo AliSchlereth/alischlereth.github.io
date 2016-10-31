@@ -1,0 +1,374 @@
+---
+title: Single Responsiblity and the Spork
+tag_line: Extracting a Linked List Insert method in Ruby
+layout: post
+date: 2016-10-30
+---
+<div class="container-fluid">
+  <img id="spork" src="http://cdn2.backcountrygear.com/media/catalog/product/cache/1/image/9df78eab33525d08d6e5fb8d27136e95/s/n/snow_peak_titanium_spork_ti.jpg
+  " alt="spork">
+  <p>
+    Most people have had at one point or another in their lives, the unfortunate experience of eating with a spork.
+    Aside from my friend <a href="https://www.linkedin.com/in/lee-saville">Lee</a>, everyone I know hates sporks.
+    They are useful as neither a spoon nor a fork. One tool that does two things in a subpar manner.
+  </p>
+  <p>
+    This is at the heart of the <a href="https://en.wikipedia.org/wiki/Single_responsibility_principle">Single Responsibility Principle(SRP)</a>.
+    This idea, coined by <a href="http://blog.cleancoder.com/">Robert C. Martin</a> as "A class should have only one reason to change."
+    Coupled with <a href="http://www.sandimetz.com/">Sandi Metz's</a> <a href="https://youtu.be/npOGOmkxuio">Five Little Rules to Object Oriented Design</a>
+    provide a solid framework upon which the novice up to expert developer can follow in writing clean, readable, flexible code.
+  </p>
+  <div class="container-fluid">
+    <emphasis>Sandi's 5 Rules</emphasis>
+    <ol>
+      <li>A class may contain no more than 100 lines of code.</li>
+      <li>A method may contain no more than 5 lines of code.</li>
+      <li>You may pass no more than 4 parameters into a method.</li>
+      <li>Controllers can instantiate only one object.</li>
+      <li>You may pass only one instance variable to a view.</li>
+    </ol>
+  </div>
+  <p>
+    Here we are going to focus on number 2)<emphasis>A method may contain no more than 5 lines of code.</emphasis>
+    It is easy enough to get in the flow of creating functionality, only to find once you have reached your goal,
+    that your method is large and unwieldy. For example, this method which inserts a node into a linked list:
+  </p>
+  <!-- HTML generated using hilite.me -->
+  <div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
+   2
+   3
+   4
+   5
+   6
+   7
+   8
+   9
+  10
+  11
+  12
+  13
+  14
+  15
+  16
+  17</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">insert</span>(position, node)
+      <span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
+        <span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span>
+      <span style="color: #008800; font-weight: bold">end</span>
+      current_node <span style="color: #333333">=</span> head
+      node_to_insert <span style="color: #333333">=</span> <span style="color: #003366; font-weight: bold">Node</span><span style="color: #333333">.</span>new(node)
+      <span style="color: #008800; font-weight: bold">if</span> position <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>
+        prepend
+      <span style="color: #008800; font-weight: bold">else</span>
+      (position <span style="color: #333333">-</span> <span style="color: #0000DD; font-weight: bold">1</span>)<span style="color: #333333">.</span>times <span style="color: #008800; font-weight: bold">do</span>
+        current_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+        <span style="color: #008800; font-weight: bold">end</span>
+      <span style="color: #008800; font-weight: bold">end</span>
+      node_to_insert<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+      current_node<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> node_to_insert
+      node
+    <span style="color: #008800; font-weight: bold">end</span>
+  </pre></td></tr></table></div>
+
+  <p>
+    Unfortunately, in order to figure out what this method does, you have to take some time to carefully trace through
+    each step to figure out how the goal is being achieved. Since a great deal of your time as a professional Software
+    Developer will be spent reading not only your own code, but also that of your team, let us be kind to each other and
+    write highly readable, clean, code.
+  </p>
+  <p>
+    One of the easiest ways to achieve this goal of writing clean code, with only 5 lines per method is to extract your
+    code from one method into another. Taking my example from earlier. First, we need to look through to find where we can
+    simply cut some functionality from one method into another. A place I find easy to start, is pulling out loops and if/else
+    conditionals. Let's pull out the conditional on lines 7 - 13.
+  </p>
+  <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
+   2
+   3
+   4
+   5
+   6
+   7
+   8
+   9
+  10
+  11
+  12
+  13
+  14
+  15
+  16
+  17
+  18
+  19
+  20
+  21</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">insert</span>(position, node)
+      <span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
+        <span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span>
+      <span style="color: #008800; font-weight: bold">end</span>
+      current_node <span style="color: #333333">=</span> head
+      node_to_insert <span style="color: #333333">=</span> <span style="color: #003366; font-weight: bold">Node</span><span style="color: #333333">.</span>new(node)
+      find_position(position)
+      node_to_insert<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+      current_node<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> node_to_insert
+      node
+    <span style="color: #008800; font-weight: bold">end</span>
+
+  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">find_position</span>(position)
+    <span style="color: #008800; font-weight: bold">if</span> position <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>
+      prepend
+    <span style="color: #008800; font-weight: bold">else</span>
+    (position <span style="color: #333333">-</span> <span style="color: #0000DD; font-weight: bold">1</span>)<span style="color: #333333">.</span>times <span style="color: #008800; font-weight: bold">do</span>
+      current_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+      <span style="color: #008800; font-weight: bold">end</span>
+    <span style="color: #008800; font-weight: bold">end</span>
+  <span style="color: #008800; font-weight: bold">end</span>
+  </pre></td></tr></table></div>
+
+  <p>
+    When pulling out code, extracting, keep in mind that this bit of code does not live in isolation. What will it need to
+    be able to perform its job? Does it need parameters passed in? What will it return after it runs?
+  </p>
+  <p>
+    In this example, my new method - find_position - uses position, which is being passed in to the insert method on line 1
+    and current_node, which is set on line 5.We will need to pass that into find_position. We know in Ruby that the last
+    task performed is what gets automatically returned out of a method. Our new find_position method will either call
+    the prepend method in line 15, or slide along the nodes until it reaches the intended position in the linked_list
+    in lines 17-19. I want to take the opportunity now, to look more closely at find_position.
+    It is not a 5 line method, what can we do about that? Earlier I mentioned if/else and loops are great places to start
+    when extracting code. Let's examine the loop on 17-19.
+  </p>
+  <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%">1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">find_position</span>(position)
+    <span style="color: #008800; font-weight: bold">if</span> position <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>
+      prepend
+    <span style="color: #008800; font-weight: bold">else</span>
+    (position <span style="color: #333333">-</span> <span style="color: #0000DD; font-weight: bold">1</span>)<span style="color: #333333">.</span>times <span style="color: #008800; font-weight: bold">do</span>
+      current_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+      <span style="color: #008800; font-weight: bold">end</span>
+    <span style="color: #008800; font-weight: bold">end</span>
+  <span style="color: #008800; font-weight: bold">end</span>
+  </pre></td></tr></table></div>
+  <p>
+    By pulling out the loop, we now have find_position which calls to slide_along_nodes to do the sliding.
+  </p>
+  <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
+   2
+   3
+   4
+   5
+   6
+   7
+   8
+   9
+  10
+  11
+  12
+  13</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">find_position</span>(position, current_node)
+    <span style="color: #008800; font-weight: bold">if</span> position <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>
+      prepend
+    <span style="color: #008800; font-weight: bold">else</span>
+      slide_along_nodes(position,current_node)
+    <span style="color: #008800; font-weight: bold">end</span>
+  <span style="color: #008800; font-weight: bold">end</span>
+
+  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">slide_along_nodes</span>(position, current_node)
+    (position <span style="color: #333333">-</span> <span style="color: #0000DD; font-weight: bold">1</span>)<span style="color: #333333">.</span>times <span style="color: #008800; font-weight: bold">do</span>
+      current_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+      <span style="color: #008800; font-weight: bold">end</span>
+  <span style="color: #008800; font-weight: bold">end</span>
+  </pre></td></tr></table></div>
+  <p>
+    That feels really good, our insert method is down from 16 lines to 9, and it is already much easier to
+    quickly read what is happening. Unfortunately, we have already used our low hanging fruit.
+  </p>
+  <p>
+    In addition to extracting if/else conitionals and loops, we can also refactor that simple if statement
+    on line 2 down from 3 lines to 1.
+  </p>
+  <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%">1
+  2
+  3</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
+     <span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span>
+  <span style="color: #008800; font-weight: bold">end</span>
+  </pre></td></tr></table></div>
+  <p>
+  to:
+  </p>
+  <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%">1</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span> <span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
+  </pre></td></tr></table></div>
+  <p>
+    As of right now, our insert method and its dependent methods put together looks like this:
+  </p>
+  <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
+   2
+   3
+   4
+   5
+   6
+   7
+   8
+   9
+  10
+  11
+  12
+  13
+  14
+  15
+  16
+  17
+  18
+  19
+  20
+  21
+  22
+  23</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">insert</span>(position, node)
+      <span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span> <span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
+      current_node <span style="color: #333333">=</span> head
+      node_to_insert <span style="color: #333333">=</span> <span style="color: #003366; font-weight: bold">Node</span><span style="color: #333333">.</span>new(node)
+      find_position(position, current_node)
+      node_to_insert<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+      current_node<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> node_to_insert
+      node
+   <span style="color: #008800; font-weight: bold">end</span>
+
+  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">find_position</span>(position, current_node)
+    <span style="color: #008800; font-weight: bold">if</span> position <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>
+      prepend
+    <span style="color: #008800; font-weight: bold">else</span>
+      slide_along_nodes(position,current_node)
+    <span style="color: #008800; font-weight: bold">end</span>
+  <span style="color: #008800; font-weight: bold">end</span>
+
+  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">slide_along_nodes</span>(position, current_node)
+    (position <span style="color: #333333">-</span> <span style="color: #0000DD; font-weight: bold">1</span>)<span style="color: #333333">.</span>times <span style="color: #008800; font-weight: bold">do</span>
+      current_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+     <span style="color: #008800; font-weight: bold">end</span>
+  <span style="color: #008800; font-weight: bold">end</span>
+  </pre></td></tr></table></div>
+  <p>
+    Now here I'm stuck. I really don't want to extract out further parts of this insert method.
+    I took out, extracted, the if/else conditionals, I extracted the loop, and slimmed down that
+    if conditional to one line. I think I can probably do something with lines 6-7 since it simply
+    returns node. When naming a new method here, I want to think about what these lines are doing,
+    and give it a name that illustrates that. Here we are inserting the new node, but before that
+    must attach the old next_node to this current_node so we don't lose track of it.
+    (If that doesn't make sense, you may want to
+    <a href="http://codingfreak.blogspot.com/2012/02/implementation-of-doubly-linked-list.html">
+    check out some more on linked lists</a> when you have time. All that matters for SRP is that we
+    are pulling out these lines into a different method.)
+    </p>
+    <p>
+      I'm going to take line 4 out from insert and move it into attach_new_node since lines 6 & 7 were
+      the ones using it anyway. How about this:
+    </p>
+  <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
+   2
+   3
+   4
+   5
+   6
+   7
+   8
+   9
+  10
+  11
+  12
+  13</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">insert</span>(position, node)
+    <span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span> <span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
+    current_node <span style="color: #333333">=</span> head
+    current_node <span style="color: #333333">=</span> find_position(position, current_node)
+    attach_new_node(node_to_insert, current_node, node)
+    node
+  <span style="color: #008800; font-weight: bold">end</span>
+
+  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">attach_new_node</span>(node_to_insert, current_node, node)
+    node_to_insert <span style="color: #333333">=</span> <span style="color: #003366; font-weight: bold">Node</span><span style="color: #333333">.</span>new(node)
+    node_to_insert<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+    current_node<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> node_to_insert
+  <span style="color: #008800; font-weight: bold">end</span>
+  </pre></td></tr></table></div>
+
+  <p>
+    The new method attach_new_node will do the work of making sure our links don't get lost in the process of inserting
+    a new node into the list. Putting it all back together, it looks like this:
+  </p>
+  <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:auto;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><table><tr><td><pre style="margin: 0; line-height: 125%"> 1
+   2
+   3
+   4
+   5
+   6
+   7
+   8
+   9
+  10
+  11
+  12
+  13
+  14
+  15
+  16
+  17
+  18
+  19
+  20
+  21
+  22
+  23
+  24
+  25
+  26
+  27
+  28</pre></td><td><pre style="margin: 0; line-height: 125%"><span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">insert</span>(position, node)
+    <span style="color: #008800; font-weight: bold">return</span> <span style="background-color: #fff0f0">&quot;This is not a valid request.&quot;</span> <span style="color: #008800; font-weight: bold">if</span> node <span style="color: #333333">==</span> <span style="color: #003388; font-weight: bold">nil</span> <span style="color: #333333">||</span> position <span style="color: #333333">&gt;</span> count
+    current_node <span style="color: #333333">=</span> head
+    current_node <span style="color: #333333">=</span> find_position(position, current_node)
+    attach_new_node(node_to_insert, current_node, node)
+    node
+  <span style="color: #008800; font-weight: bold">end</span>
+
+  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">attach_new_node</span>(node_to_insert, current_node, node)
+    node_to_insert           <span style="color: #333333">=</span> <span style="color: #003366; font-weight: bold">Node</span><span style="color: #333333">.</span>new(node)
+    node_to_insert<span style="color: #333333">.</span>next_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+    current_node<span style="color: #333333">.</span>next_node   <span style="color: #333333">=</span> node_to_insert
+  <span style="color: #008800; font-weight: bold">end</span>
+
+  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">find_position</span>(position, current_node)
+    <span style="color: #008800; font-weight: bold">if</span> position <span style="color: #333333">==</span> <span style="color: #0000DD; font-weight: bold">0</span>
+      prepend
+    <span style="color: #008800; font-weight: bold">else</span>
+      slide_along_nodes(position,current_node)
+    <span style="color: #008800; font-weight: bold">end</span>
+  <span style="color: #008800; font-weight: bold">end</span>
+
+  <span style="color: #008800; font-weight: bold">def</span> <span style="color: #0066BB; font-weight: bold">slide_along_nodes</span>(position, current_node)
+    (position <span style="color: #333333">-</span> <span style="color: #0000DD; font-weight: bold">1</span>)<span style="color: #333333">.</span>times <span style="color: #008800; font-weight: bold">do</span>
+      current_node <span style="color: #333333">=</span> current_node<span style="color: #333333">.</span>next_node
+    <span style="color: #008800; font-weight: bold">end</span>
+    current_node
+  <span style="color: #008800; font-weight: bold">end</span>
+  </pre></td></tr></table></div>
+
+  <p>
+    I can't leave without pointing out one of my favorite ways to make code more readable -
+    lining everything up, not just indention but the equals signs. Check out lines 3 & 4, and 10-12.
+    Doesn't it just set your Software Developer heart at ease?
+  </p>
+  <p>
+    Remember, when extracting from a method first look for:
+    <ol>
+      <li>Conditionals (if/elsif/else)</li>
+      <li>Loops</li>
+      <li>Enumerables(not covered in this post)</li>
+    </ol>
+    Don't forget to pass through the necessary information as parameters and think about what will
+    return out of each new method you've created. <strong>Happy Extracting!</strong>
+  </p>
+</div>
